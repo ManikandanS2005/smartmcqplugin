@@ -1,9 +1,9 @@
 import React from 'react'
-console.log("mani")
+
 const page = () => {
   return (
     <div>
-    Home page Welcome proceed button
+      who are you 
     </div>
   )
 }
