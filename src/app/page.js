@@ -1,9 +1,11 @@
 import React from 'react'
+import { Button } from "@/components/ui/button"
+import HeroSection from '@/componets/HeroSection'
 console.log("mani")
 const page = () => {
   return (
-    <div>
-    Home page Welcome proceed button
+    <div className='mt-2'>
+    <HeroSection/>
     </div>
   )
 }
