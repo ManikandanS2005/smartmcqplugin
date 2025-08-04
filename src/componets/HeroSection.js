@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import React from 'react';
 
 
@@ -13,6 +14,7 @@ const HeroSection = () => {
        <button className="bg-blue-900 hover:bg-blue-700 hover:cursor-pointer px-4 py-1 m-2 rounded text-white font-semibold text-xl " >
         Proceed
       </button>
+     
     </div>
   );
 };
