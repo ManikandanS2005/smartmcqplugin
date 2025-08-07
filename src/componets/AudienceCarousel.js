@@ -30,10 +30,10 @@ export default function AudienceCarousel() {
 
   const handleAudienceChange = (value) => {
     if (value !== "Others") {
-      updateFormData({ audience: value });
+      updateFormData({ forWhom: value });
       router.push(`/form`);
     } else {
-      updateFormData({ audience: "Others" });
+      updateFormData({ forWhom: "Others" });
     }
     console.log(`audience:${value}`);
   };
@@ -47,7 +47,7 @@ export default function AudienceCarousel() {
       return;
     }
 
-    updateFormData({ audience: trimmed });
+    updateFormData({ forWhom: trimmed });
     router.push(`/form`);
   };
 
