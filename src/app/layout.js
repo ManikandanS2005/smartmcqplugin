@@ -1,10 +1,11 @@
-
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/componets/Navbar";
+
 import { FormProvider } from "@/context/FormContext";
 import { Toaster } from "@/components/ui/sonner";
 import { MCQProvider } from "@/context/MCQContext";
+import { FormInfoProvider } from "@/context/FormInfoContext"; // import the new context provider
+import Navbar from "@/componets/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,15 +29,16 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900`}
       >
         <FormProvider>
-           <MCQProvider>
-        <Navbar />
-         <main className="pt-14 h-screen bg-gray-900 text-amber-50"> 
-          {children}
-          <Toaster/>
-        </main>
-        </MCQProvider>
+          <MCQProvider>
+            <FormInfoProvider> {/* added here */}
+              <Navbar />
+              <main className="pt-14 h-screen bg-gray-900 text-amber-50">
+                {children}
+                <Toaster />
+              </main>
+            </FormInfoProvider>
+          </MCQProvider>
         </FormProvider>
-        
       </body>
     </html>
   );
