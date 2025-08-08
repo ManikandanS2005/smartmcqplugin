@@ -1,14 +1,17 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useFormContext } from "@/context/FormContext";
+import { useMCQ } from "@/context/MCQContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 const Page = () => {
+  const router = useRouter();
   const { formData, updateFormData } = useFormContext();
+  const { setGeneratedMCQs } = useMCQ();
   const [loading, setLoading] = useState(false);
-  const [mcqs, setMcqs] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,7 +20,6 @@ const Page = () => {
 
   const generateMCQs = async () => {
     setLoading(true);
-    
 
     const payload = {
       role: formData.role,
@@ -27,35 +29,31 @@ const Page = () => {
       count: parseInt(formData.mcqno) || 20,
       additionalDesc: formData.additionalDesc,
     };
-    console.log(`${formData.forWhom}hii`)
-    console.log(JSON.stringify(payload))
 
-   try {
-  const res = await fetch("/api/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-  if (!res.ok) {
-    throw new Error(`HTTP error! Status: ${res.status}`);
-  }
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
 
-  const data = await res.json();
-  console.log("🧠 Gemini Raw Response:", data.response);
+      const data = await res.json();
+      let parsed = typeof data.response === "string"
+        ? JSON.parse(data.response)
+        : data.response;
 
-  const parsed = typeof data.response === "string" ? JSON.parse(data.response) : data.response;
+      if (!Array.isArray(parsed)) throw new Error("MCQ format invalid — expected an array.");
 
-  setMcqs(parsed);
-  console.log("✅ Parsed MCQs:", parsed);
-
-} catch (err) {
-  console.error("❌ API Call or JSON Parsing Error:", err);
-  alert("Something went wrong while generating MCQs.");
-} finally {
-  setLoading(false);
-}
-
+      setGeneratedMCQs(parsed); // ✅ Store in context
+      router.push("/edit"); // ✅ Go to edit page
+    } catch (err) {
+      console.error("❌ API Call or JSON Parsing Error:", err);
+      alert("Something went wrong while generating MCQs.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,10 +62,9 @@ const Page = () => {
         Smart Assessment – Instantly Generate MCQs with AI!
       </h1>
 
-      {/* Inputs */}
       <div className="flex flex-col">
         <Label htmlFor="topic" className="m-2">Topic</Label>
-        <Input id="topic" name="topic" value={formData.topic || " "} onChange={handleChange} className="m-2" />
+        <Input id="topic" name="topic" value={formData.topic || ""} onChange={handleChange} className="m-2" />
       </div>
 
       <div className="flex flex-col">
@@ -88,24 +85,6 @@ const Page = () => {
       <Button onClick={generateMCQs} disabled={loading}>
         {loading ? "Generating..." : "Generate MCQs"}
       </Button>
-
-      {/* Output */}
-      {mcqs.length > 0 && (
-        <div className="mt-8 space-y-4">
-          <h2 className="text-xl font-semibold">Generated MCQs</h2>
-          {mcqs.map((q, i) => (
-            <div key={i} className="border p-4 rounded shadow">
-              <p className="font-medium">{i + 1}. {q.question}</p>
-              <ul className="list-disc pl-6">
-                {q.options.map((opt, j) => (
-                  <li key={j}>{opt}</li>
-                ))}
-              </ul>
-              <p className="text-green-600 mt-2">Answer: {q.answer}</p>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
