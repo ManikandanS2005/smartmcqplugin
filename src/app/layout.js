@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { MCQProvider } from "@/context/MCQContext";
 import { FormInfoProvider } from "@/context/FormInfoContext"; // import the new context provider
 import Navbar from "@/componets/Navbar";
+import SessionProviderWrapper from "@/context/SessionProviderWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900`}
       >
+        <SessionProviderWrapper>
         <FormProvider>
           <MCQProvider>
             <FormInfoProvider> {/* added here */}
@@ -39,6 +41,7 @@ export default function RootLayout({ children }) {
             </FormInfoProvider>
           </MCQProvider>
         </FormProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
