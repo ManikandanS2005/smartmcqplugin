@@ -1,8 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { useFormInfo } from "@/context/FormInfoContext";
+import { useMCQ } from "@/context/MCQContext";
+import { useRouter } from "next/navigation";
 
-const Page = () => {
+const FormDetailsPage = () => {
   const {
     formName,
     setFormName,
@@ -16,7 +18,10 @@ const Page = () => {
     addCustomField,
   } = useFormInfo();
 
+  const { generatedMCQs } = useMCQ();
   const [newField, setNewField] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const addField = () => {
     if (newField.trim()) {
@@ -25,8 +30,8 @@ const Page = () => {
     }
   };
 
-  const handleSubmit = () => {
-    const formDetails = {
+  const handleSubmit = async () => {
+    const payload = {
       formName,
       formDescription,
       fields: [
@@ -34,9 +39,34 @@ const Page = () => {
         ...(includeRollNo ? ["Roll No"] : []),
         ...customFields,
       ],
+      mcqs: generatedMCQs,
     };
-    console.log("Generated Form Details:", formDetails);
-    // You can save this in context or send it to Google Scripts API here
+
+    try {
+      setLoading(true);
+
+      const res = await fetch("/api/gform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      
+      console.log("Generated Form Link:", data.formUrl);
+
+      if (data.formUrl) {
+        sessionStorage.setItem("generatedFormLink", data.formUrl);
+        router.push("/gform");
+      } else {
+        alert("Failed to generate form. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error generating form:", err);
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,7 +83,7 @@ const Page = () => {
             value={formName}
             onChange={(e) => setFormName(e.target.value)}
             placeholder="Enter form name"
-            className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600"
           />
         </div>
 
@@ -64,7 +94,7 @@ const Page = () => {
             value={formDescription}
             onChange={(e) => setFormDescription(e.target.value)}
             placeholder="Enter form description"
-            className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600"
           />
         </div>
 
@@ -100,7 +130,7 @@ const Page = () => {
               value={newField}
               onChange={(e) => setNewField(e.target.value)}
               placeholder="Enter custom field name"
-              className="flex-1 px-3 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring focus:ring-blue-500"
+              className="flex-1 px-3 py-2 rounded bg-gray-700 border border-gray-600"
             />
             <button
               onClick={addField}
@@ -119,13 +149,14 @@ const Page = () => {
         {/* Submit Button */}
         <button
           onClick={handleSubmit}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded text-white font-semibold"
+          disabled={loading}
+          className="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded text-white font-semibold flex justify-center"
         >
-          Generate Form
+          {loading ? "Generating..." : "Generate Form"}
         </button>
       </div>
     </div>
   );
 };
 
-export default Page;
+export default FormDetailsPage;
