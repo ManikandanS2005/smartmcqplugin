@@ -1,8 +1,10 @@
+// src/app/formDetails/page.js
 "use client";
 import React, { useState } from "react";
 import { useFormInfo } from "@/context/FormInfoContext";
 import { useMCQ } from "@/context/MCQContext";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const FormDetailsPage = () => {
   const {
@@ -22,6 +24,7 @@ const FormDetailsPage = () => {
   const [newField, setNewField] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const addField = () => {
     if (newField.trim()) {
@@ -31,6 +34,11 @@ const FormDetailsPage = () => {
   };
 
   const handleSubmit = async () => {
+    if (status !== "authenticated") {
+      alert("Please sign in with Google to generate the form.");
+      return;
+    }
+
     const payload = {
       formName,
       formDescription,
@@ -39,6 +47,7 @@ const FormDetailsPage = () => {
         ...(includeRollNo ? ["Roll No"] : []),
         ...customFields,
       ],
+      // pass MCQs as-is; server will map into the Forms API schema
       mcqs: generatedMCQs,
     };
 
@@ -52,18 +61,19 @@ const FormDetailsPage = () => {
       });
 
       const data = await res.json();
-      
-      console.log("Generated Form Link:", data.formUrl);
 
-      if (data.formUrl) {
+      console.log("API response from /api/gform:", data);
+
+      if (data?.formUrl) {
+        // store and navigate
         sessionStorage.setItem("generatedFormLink", data.formUrl);
         router.push("/gform");
       } else {
-        alert("Failed to generate form. Please try again.");
+        alert(`Failed to generate form: ${data?.error || "unknown error"}`);
       }
     } catch (err) {
       console.error("Error generating form:", err);
-      alert("Something went wrong.");
+      alert("Something went wrong while generating the form.");
     } finally {
       setLoading(false);
     }
