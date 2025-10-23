@@ -3,6 +3,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // ✅ Use private env key (server-side only)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// ❌ Removed: const models = await genAI.listModels();
+// ❌ Removed: console.log(models);
+
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -15,7 +18,8 @@ export async function POST(req) {
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // You are correctly setting the model here inside the async function
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
 Act as a ${role} creating MCQs for ${forWhom}.
@@ -47,7 +51,6 @@ Return strictly a raw JSON array. Do NOT use triple backticks or markdown. Examp
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
     console.error("Gemini API Error:", error);
     return new Response(
