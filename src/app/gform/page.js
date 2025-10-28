@@ -1,21 +1,31 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const GFormsPage = () => {
   const [formLink, setFormLink] = useState("");
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
+    // Get published (not edit) form link from sessionStorage
     const link = sessionStorage.getItem("generatedFormLink");
-    if (link) setFormLink(link);
+    if (link) {
+      const publishedLink = link.replace("edit", "viewform"); // ✅ Ensure published form version
+      setFormLink(publishedLink);
+    }
     setLoading(false);
   }, []);
 
   const handleCopy = () => {
     if (formLink) {
       navigator.clipboard.writeText(formLink);
-      alert("Form link copied to clipboard!");
+      alert("Form link copied!");
     }
+  };
+
+  const handleNavigateToEmail = () => {
+    router.push(`/email?link=${encodeURIComponent(formLink)}`);
   };
 
   return (
@@ -33,13 +43,20 @@ const GFormsPage = () => {
               rel="noopener noreferrer"
               className="text-blue-400 underline block"
             >
-              Open Google Form
+              Open Published Google Form
             </a>
             <button
               onClick={handleCopy}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
             >
               Copy Link
+            </button>
+
+            <button
+              onClick={handleNavigateToEmail}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full"
+            >
+              Send Form via Email
             </button>
           </div>
         ) : (
