@@ -69,7 +69,7 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 w-full z-50 bg-gray-900 text-white shadow-md shadow-white/10 px-4 py-2 flex items-center justify-between">
       {/* ✅ Logo links back to home */}
       <Link href="/" className="text-2xl font-bold cursor-pointer">
-        SMARTPLUGIN
+        Smart MCQ Plugin
       </Link>
 
       {/* Auth buttons or profile */}
