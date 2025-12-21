@@ -25,54 +25,48 @@ export default function Navbar() {
   const dropdownRef = useRef(null);
 
   const openDropdown = () => {
-    if (dropdownTimeout.current) {
-      clearTimeout(dropdownTimeout.current);
-      dropdownTimeout.current = null;
-    }
+    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
     setDropdownOpen(true);
   };
 
   const closeDropdown = () => {
     dropdownTimeout.current = setTimeout(() => {
       setDropdownOpen(false);
-      dropdownTimeout.current = null;
-    }, 4000);
+    }, 2000);
   };
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
-        if (dropdownTimeout.current) {
-          clearTimeout(dropdownTimeout.current);
-          dropdownTimeout.current = null;
-        }
       }
     }
 
     if (dropdownOpen) {
       window.addEventListener("click", handleClickOutside);
-    } else {
-      window.removeEventListener("click", handleClickOutside);
     }
 
     return () => window.removeEventListener("click", handleClickOutside);
   }, [dropdownOpen]);
 
-  useEffect(() => {
-    return () => {
-      if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
-    };
-  }, []);
-
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-gray-900 text-white shadow-md shadow-white/10 px-4 py-2 flex items-center justify-between">
-      {/* ✅ Logo links back to home */}
-      <Link href="/" className="text-2xl font-bold cursor-pointer">
+    <header className="fixed top-0 left-0 w-full z-50 bg-gray-900 text-white shadow-md px-4 py-2 flex items-center justify-between">
+      {/* ✅ App Name (MUST match OAuth name exactly) */}
+      <Link href="/" className="text-2xl font-bold">
         Smart MCQ Plugin
       </Link>
 
-      {/* Auth buttons or profile */}
+      {/* ✅ Privacy + Terms (REQUIRED by Google) */}
+      <div className="flex gap-4 text-sm">
+        <Link href="/privacy" className="hover:underline">
+          Privacy Policy
+        </Link>
+        <Link href="/terms" className="hover:underline">
+          Terms
+        </Link>
+      </div>
+
+      {/* Auth section */}
       {session ? (
         <div
           className="relative"
@@ -87,11 +81,10 @@ export default function Navbar() {
               referrerPolicy="no-referrer"
             />
             <AvatarFallback>
-              {session.user?.name?.[0].toUpperCase() || "U"}
+              {session.user?.name?.[0]?.toUpperCase() || "U"}
             </AvatarFallback>
           </Avatar>
 
-          {/* Dropdown for logout */}
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-28 bg-gray-800 border border-gray-600 rounded-md shadow-lg p-2 text-center">
               <button
@@ -104,7 +97,7 @@ export default function Navbar() {
           )}
         </div>
       ) : (
-        <div className="flex items-center justify-end flex-grow">
+        <>
           <Button
             onClick={() => setDialogOpen(true)}
             className="bg-blue-900 hover:bg-blue-700"
@@ -138,7 +131,7 @@ export default function Navbar() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
+        </>
       )}
     </header>
   );
