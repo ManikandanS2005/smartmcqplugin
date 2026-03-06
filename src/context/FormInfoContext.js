@@ -1,5 +1,4 @@
 "use client";
-
 import React, { createContext, useContext, useState } from "react";
 
 const FormInfoContext = createContext();
@@ -7,19 +6,60 @@ const FormInfoContext = createContext();
 export function FormInfoProvider({ children }) {
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
-  const [includeName, setIncludeName] = useState(false);
-  const [includeRollNo, setIncludeRollNo] = useState(false);
   const [customFields, setCustomFields] = useState([]);
 
-  const addCustomField = (field) => {
-    if (field.trim()) {
-      setCustomFields((prev) => [...prev, field.trim()]);
-    }
+  /* ADD FIELD */
+
+  const addCustomField = (name, type, options = []) => {
+    if (!name.trim()) return;
+
+    const newField = {
+      id: Date.now().toString(),
+      name: name.trim(),
+      type,
+      required: true,
+      options,
+      example: "" // ✅ needed
+    };
+
+    setCustomFields((prev) => [...prev, newField]);
   };
 
-  const clearCustomFields = () => setCustomFields([]);
+  /* REMOVE FIELD */
 
-  // You can add other helpers if needed
+  const removeField = (id) => {
+    setCustomFields((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  /* TOGGLE REQUIRED */
+
+  const toggleRequired = (id) => {
+    setCustomFields((prev) =>
+      prev.map((f) =>
+        f.id === id ? { ...f, required: !f.required } : f
+      )
+    );
+  };
+
+  /* SET EXAMPLE */
+
+  const setFieldExample = (id, value) => {
+    setCustomFields((prev) =>
+      prev.map((f) =>
+        f.id === id ? { ...f, example: value } : f
+      )
+    );
+  };
+
+  /* REMOVE EXAMPLE */
+
+  const removeExample = (id) => {
+    setCustomFields((prev) =>
+      prev.map((f) =>
+        f.id === id ? { ...f, example: "" } : f
+      )
+    );
+  };
 
   return (
     <FormInfoContext.Provider
@@ -28,13 +68,12 @@ export function FormInfoProvider({ children }) {
         setFormName,
         formDescription,
         setFormDescription,
-        includeName,
-        setIncludeName,
-        includeRollNo,
-        setIncludeRollNo,
         customFields,
         addCustomField,
-        clearCustomFields,
+        removeField,
+        toggleRequired,
+        setFieldExample,
+        removeExample,
       }}
     >
       {children}
@@ -42,10 +81,4 @@ export function FormInfoProvider({ children }) {
   );
 }
 
-export function useFormInfo() {
-  const context = useContext(FormInfoContext);
-  if (!context) {
-    throw new Error("useFormInfo must be used within a FormInfoProvider");
-  }
-  return context;
-}
+export const useFormInfo = () => useContext(FormInfoContext);
